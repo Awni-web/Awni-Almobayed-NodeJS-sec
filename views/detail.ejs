@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Detail</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>File: <%= filename %>
+        </h1>
+    </header>
+    <main>
+        <section class="file-content">
+            <h2>Content</h2>
+            <pre><%= content %></pre>
+        </section>
+
+        <section class="file-actions">
+            <h2>Rename File</h2>
+            <form action="/update/<%= filename %>" method="POST" class="form-container">
+                <label for="newFilename">New File Name:</label>
+                <input type="text" id="newFilename" name="newFilename" placeholder="Enter new name" required>
+                <button type="submit" class="button">Rename File</button>
+            </form>
+
+            <h2>Delete File</h2>
+            <form action="/delete/<%= filename %>" method="POST">
+                <button type="submit" class="button delete-button">Delete File</button>
+            </form>
+        </section>
+        <a href="/" class="button">Back to List</a>
+    </main>
+</body>
+
+</html>

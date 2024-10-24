@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management REST API</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <header>
+        <h1>File Management REST API</h1>
+    </header>
+    <main>
+        <h2>File List</h2>
+        <ul class="file-list">
+            <% if (files.length> 0) { %>
+                <% files.forEach(file=> { %>
+                    <li><a href="/files/<%= file %>">
+                            <%= file %>
+                        </a></li>
+                    <% }) %>
+                        <% } else { %>
+                            <p>No files found</p>
+                            <% } %>
+        </ul>
+        <a href="/create" class="button">Create a New File</a>
+    </main>
+</body>
+
+</html>
