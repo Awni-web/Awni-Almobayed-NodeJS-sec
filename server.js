@@ -42,6 +42,10 @@ app.post("/create", (req, res, next) => {
   const content = req.body.content;
   const filePath = path.join(dataDir, filename);
 
+  if (fs.existsSync(filePath)) {
+    return res.status(403).send("File already exist!");
+  }
+
   fs.writeFile(filePath, content, (err) => {
     if (err) {
       return next(
