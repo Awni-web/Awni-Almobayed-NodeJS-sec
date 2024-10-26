@@ -2,7 +2,6 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
-const exp = require("constants");
 const app = express();
 
 app.set("view engine", "ejs");
