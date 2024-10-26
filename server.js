@@ -60,6 +60,10 @@ app.post("/update/:filename", (req, res, next) => {
   const oldPath = path.join(dataDir, req.params.filename);
   const newPath = path.join(dataDir, req.body.newFilename);
 
+  if (fs.existsSync(newPath)) {
+    return res.status(403).send("File already exist!");
+  }
+
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
       if (err.code === "ENOENT") {
@@ -96,5 +100,5 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res) => {
-  res.status(404).send("404: Page not found");
+  res.status(404).send("Error 404: Page not found");
 });
