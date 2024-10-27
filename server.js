@@ -10,25 +10,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const dataDir = path.join(__dirname, "data");
 
+const fileExists = (req, res, next) => {
+  const filePath = path.join(dataDir, req.params.filename);
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).send("File not found.");
+    }
+    next();
+  });
+};
+
 app.get("/", (req, res, next) => {
   fs.readdir(dataDir, (err, files) => {
-    if (err) {
-      return next(new Error("Failed to read the files directory"));
-    }
+    if (err) return next(new Error("Failed to read the files directory."));
     res.render("index", { files });
   });
 });
 
-app.get("/files/:filename", (req, res, next) => {
+app.get("/files/:filename", fileExists, (req, res, next) => {
   const filePath = path.join(dataDir, req.params.filename);
-
   fs.readFile(filePath, "utf8", (err, content) => {
-    if (err) {
-      if (err.code === "ENOENT") {
-        return res.status(404).send("File not found");
-      }
-      return next(new Error("Failed to read the file content"));
-    }
+    if (err) return next(new Error("Failed to read the file content."));
     res.render("detail", { filename: req.params.filename, content });
   });
 });
@@ -42,12 +44,11 @@ app.post("/create", (req, res, next) => {
   const content = req.body.content;
   const filePath = path.join(dataDir, filename);
 
-  if (fs.existsSync(filePath)) {
-    return res.status(403).send("File already exist!");
-  }
-
-  fs.writeFile(filePath, content, (err) => {
+  fs.writeFile(filePath, content, { flag: "wx" }, (err) => {
     if (err) {
+      if (err.code === "EEXIST") {
+        return res.status(403).send("File already exists!");
+      }
       return next(
         new Error("Failed to create the file. Please try again later.")
       );
@@ -61,44 +62,44 @@ app.post("/update/:filename", (req, res, next) => {
   const newPath = path.join(dataDir, req.body.newFilename);
 
   if (fs.existsSync(newPath)) {
-    return res.status(403).send("File already exist!");
+    return res.status(403).send("File with the new name already exists!");
   }
 
   fs.rename(oldPath, newPath, (err) => {
     if (err) {
       if (err.code === "ENOENT") {
-        return res.status(404).send("File to rename not found");
+        return res.status(404).send("File to rename not found.");
       }
-      return next(new Error("Failed to rename the file"));
+      return next(new Error("Failed to rename the file."));
     }
     res.redirect("/");
   });
 });
 
-app.post("/delete/:filename", (req, res, next) => {
+app.post("/delete/:filename", fileExists, (req, res, next) => {
   const filePath = path.join(dataDir, req.params.filename);
 
   fs.unlink(filePath, (err) => {
-    if (err) {
-      if (err.code === "ENOENT") {
-        return res.status(404).send("File to delete not found.");
-      }
-      return next(new Error("Failed to delete the file."));
-    }
+    if (err) return next(new Error("Failed to delete the file."));
     res.redirect("/");
   });
+});
+
+app.use((req, res) => {
+  res.status(404).send("Error 404: Page not found");
+});
+
+app.use((err, req, res, next) => {
+  console.error(`Error: ${err.message}`);
+  console.error(err.stack);
+  res
+    .status(500)
+    .send(
+      "Internal Server Error: Something went wrong. Please try again later."
+    );
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wrong, please try again later.");
-});
-
-app.use((req, res) => {
-  res.status(404).send("Error 404: Page not found");
 });
